@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lumocardco-hue</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>lumocardco-hue</h1>
+        <div class="controls">
+            <label>背景:</label>
+            <button onclick="setBg('bg1.jpg')">背景A</button>
+            <button onclick="setBg('bg2.jpg')">背景B</button>
+        </div>
+        <div class="controls">
+            <label>数字:</label>
+            <button onclick="addNumber('99')">99</button>
+            <button onclick="addNumber('102')">102</button>
+        </div>
+        <input type="file" id="upload" accept="image/*">
+        <canvas id="canvas"></canvas>
+        <button id="download" class="main-btn">画像を保存する</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
