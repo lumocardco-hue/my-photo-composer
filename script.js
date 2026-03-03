@@ -4,34 +4,45 @@ const canvas = new fabric.Canvas('canvas', {
     backgroundColor: '#fff'
 });
 
-// 1. 背景をセットする関数
+// 背景をセットする関数（強化版）
 function setBg(fileName) {
-    fabric.Image.fromURL(fileName, function(img) {
+    console.log("読み込み試行:", fileName);
+    
+    // キャッシュ対策として、ファイル名の後ろにランダムな数字を付けて強制読み込み
+    const cacheBuster = fileName + "?t=" + new Date().getTime();
+
+    fabric.Image.fromURL(cacheBuster, function(img, isError) {
+        if (isError) {
+            console.error("読み込みエラー:", fileName);
+            alert("画像 '" + fileName + "' が読み込めません。リポジトリに画像があるか、ファイル名が正しいか再確認してください。");
+            return;
+        }
+        
         canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
             scaleX: canvas.width / img.width,
-            scaleY: canvas.height / img.height
+            scaleY: canvas.height / img.height,
+            originX: 'left',
+            originY: 'top'
         });
-    });
+        
+        console.log("読み込み成功:", fileName);
+    }, { crossOrigin: 'anonymous' }); // 外部サーバー制限対策
 }
 
-// 2. 数字とアイコンを「左下」に固定して追加する関数
+// 数字とアイコン追加（左下固定）
 function addNumber(text) {
-    // 既存の数字やアイコンがあれば消す（重複防止）
     canvas.getObjects().forEach(obj => {
         if (obj.type === 'text' || obj.isIcon) canvas.remove(obj);
     });
 
-    // 数字の設定
     const numText = new fabric.Text(text, {
         left: 20,
         top: canvas.height - 100,
         fontSize: 80,
-        fill: '#FFD700', // ゴールド
-        fontWeight: 'bold',
-        shadow: '2px 2px 5px rgba(0,0,0,0.5)'
+        fill: '#FFD700',
+        fontWeight: 'bold'
     });
 
-    // アイコンの設定（icon.pngがアップロードされている前提）
     fabric.Image.fromURL('icon.png', function(img) {
         img.set({
             left: 20,
@@ -42,34 +53,27 @@ function addNumber(text) {
         });
         canvas.add(img);
         canvas.add(numText);
-        canvas.bringToFront(numText);
-    });
+    }, { crossOrigin: 'anonymous' });
 }
 
-// 3. 背景削除付きの画像アップロード
+// 背景削除付きアップロード
 document.getElementById('upload').onchange = async function(e) {
     const file = e.target.files[0];
     if (!file) return;
-
-    // ボタンを「処理中...」に変える（UX向上）
-    const btn = document.querySelector('h1');
-    btn.innerText = "背景削除中...";
+    const title = document.querySelector('h1');
+    title.innerText = "AI処理中...";
 
     try {
-        // AIで背景を削除 (imglyライブラリを使用)
         const blob = await imglyRemoveBackground(file);
         const url = URL.createObjectURL(blob);
-
         fabric.Image.fromURL(url, function(img) {
             img.scaleToWidth(300);
             canvas.centerObject(img);
             canvas.add(img);
-            btn.innerText = "lumocardco-hue"; // 元に戻す
+            title.innerText = "lumocardco-hue";
         });
-    } catch (error) {
-        console.error("背景削除に失敗:", error);
-        btn.innerText = "エラー発生（そのまま読み込みます）";
-        // 失敗した場合はそのまま表示
+    } catch (err) {
+        title.innerText = "そのまま読み込みます";
         const reader = new FileReader();
         reader.onload = f => {
             fabric.Image.fromURL(f.target.result, img => {
@@ -82,11 +86,10 @@ document.getElementById('upload').onchange = async function(e) {
     }
 };
 
-// 4. ダウンロード機能
-document.getElementById('download').onclick = function() {
-    const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
+// 保存
+document.getElementById('download').onclick = () => {
     const link = document.createElement('a');
-    link.download = 'lumo-card.png';
-    link.href = dataURL;
+    link.download = 'result.png';
+    link.href = canvas.toDataURL();
     link.click();
 };
