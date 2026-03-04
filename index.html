@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>lumocardco-hue | v2.0</title>
+    <title>lumocardco-hue | v3.0</title>
     <style>
         :root { --bg: #1a1a1a; --card: #2a2a2a; --accent: #007bff; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .container { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 420px; }
         h1 { font-size: 1.5rem; margin-bottom: 20px; color: #eee; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; margin-top: 30px; }
         label { grid-column: 1 / -1; text-align: left; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         button { background: #444; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         button:hover { background: #555; }
         .main-btn { grid-column: 1 / -1; background: var(--accent); font-weight: bold; padding: 15px; margin-top: 10px; }
         .main-btn:active { transform: scale(0.98); }
-        canvas { border-radius: 10px; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-width: 100%; height: auto !important; }
+        canvas { border-radius: 10px; margin-top: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-width: 100%; height: auto !important; }
         #status { font-size: 0.7rem; color: var(--accent); margin-top: 10px; height: 1em; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -48,10 +48,51 @@
 
         <canvas id="canvas"></canvas>
 
-        <button onclick="downloadImage()" class="main-btn" style="background:#28a745;">完成した画像を保存</button>
+        <div class="controls">
+            <button onclick="downloadImage()" style="background:#28a745;">アップロード</button>
+            <button onclick="resetCanvas()" style="background:#dc3545;">最初からやり直す</button>
+        </div>
+
+        <div id="form-section" style="display:none; margin-top:30px; width:100%; border-top:1px solid #444; padding-top:20px;">
+            <label style="color:var(--accent); font-weight:bold; display:block; margin-bottom:15px; text-align:center;">
+                4. 送付先情報を入力してください
+            </label>
+            
+            <form style="display:flex; flex-direction:column; gap:15px;">
+                <div>
+                    <label style="display:block; font-size:0.9rem; margin-bottom:5px;">名前</label>
+                    <input type="text" id="name" placeholder="山田太郎" style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#333; color:white; box-sizing:border-box;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-size:0.9rem; margin-bottom:5px;">郵便番号</label>
+                    <input type="text" id="postal-code" placeholder="123-4567" onchange="fetchAddress()" style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#333; color:white; box-sizing:border-box;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-size:0.9rem; margin-bottom:5px;">郵便番号から分かる住所</label>
+                    <input type="text" id="auto-address" placeholder="自動入力されます" readonly style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#2a2a2a; color:#888; box-sizing:border-box;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-size:0.9rem; margin-bottom:5px;">番地などの追加住所</label>
+                    <input type="text" id="address" placeholder="1丁目2番3号" style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#333; color:white; box-sizing:border-box;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-size:0.9rem; margin-bottom:5px;">生まれた年</label>
+                    <input type="number" id="birth-year" placeholder="1990" min="1900" max="2030" style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#333; color:white; box-sizing:border-box;">
+                </div>
+                
+                <button type="button" onclick="submitForm()" style="background:var(--accent); grid-column:1/-1; font-weight:bold; padding:12px; margin-top:10px;">送信する</button>
+            </form>
+        </div>
+
     </div>
 
-    <script>
+
+
+<script>
         // キャンバス初期化
         const canvas = new fabric.Canvas('canvas', {
             width: 400,
@@ -93,9 +134,10 @@
                 const url = URL.createObjectURL(blob);
                 fabric.Image.fromURL(url, function(img) {
                     img.scaleToWidth(300);
-                    canvas.centerObject(img);
                     canvas.add(img);
+                    canvas.centerObject(img);
                     canvas.setActiveObject(img);
+                    canvas.renderAll();
                     status.textContent = "Person Added!";
                 });
             } catch (err) {
@@ -104,6 +146,9 @@
                 reader.onload = f => fabric.Image.fromURL(f.target.result, img => {
                     img.scaleToWidth(300);
                     canvas.add(img);
+                    canvas.centerObject(img);
+                    canvas.renderAll();
+                    status.textContent = "Person Added!";
                 });
                 reader.readAsDataURL(file);
             }
@@ -155,7 +200,61 @@
             link.download = 'lumocard.png';
             link.href = dataURL;
             link.click();
+            
+            // フォームセクションを表示
+            document.getElementById('form-section').style.display = 'block';
         }
+
+        // フォーム送信関数
+        function submitForm() {
+            const name = document.getElementById('name').value;
+            const postalCode = document.getElementById('postal-code').value;
+            const autoAddress = document.getElementById('auto-address').value;
+            const address = document.getElementById('address').value;
+            const birthYear = document.getElementById('birth-year').value;
+            
+            if (!name || !postalCode || !autoAddress || !address || !birthYear) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            alert(`送信内容:\n名前: ${name}\n郵便番号: ${postalCode}\n住所: ${autoAddress}${address}\n生まれた年: ${birthYear}`);
+            // ここで実際のサーバー送信処理を追加できます
+        }
+
+        // 郵便番号から住所を自動取得する関数
+        function fetchAddress() {
+            const postalCode = document.getElementById('postal-code').value;
+            if (!postalCode || postalCode.length < 7) return;
+            
+            // ハイフンを削除
+            const code = postalCode.replace('-', '');
+            
+            // 郵便番号から住所を取得（JSON API）
+            fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${code}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        const result = data.results[0];
+                        const fullAddress = result.address1 + result.address2 + result.address3;
+                        document.getElementById('auto-address').value = fullAddress;
+                    } else {
+                        document.getElementById('auto-address').value = '住所が見つかりません';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('auto-address').value = '取得失敗';
+                });
+        }
+
+        // キャンバスを初期状態に戻す関数
+function resetCanvas() {
+    if (confirm("全ての作業を消去して、最初からやり直しますか？")) {
+        location.reload();
+    }
+}
+        
     </script>
 </body>
 </html>
