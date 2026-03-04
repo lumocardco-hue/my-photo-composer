@@ -29,37 +29,30 @@
         });
 
 function setBg(fileName) {
-    console.log("読み込み開始:", fileName);
-    
-    // 1. まずimg要素を作る
-    const imgElement = new Image();
-    
-    // 2. 読み込み成功時の処理
-    imgElement.onload = function() {
-        console.log("画像読み込み成功:", fileName);
-        const fabricImg = new fabric.Image(imgElement);
-        
-        canvas.setBackgroundImage(fabricImg, function() {
-            canvas.renderAll();
-        }, {
-            scaleX: canvas.width / imgElement.width,
-            scaleY: canvas.height / imgElement.height,
-            originX: 'left',
-            originY: 'top'
-        });
-        alert("背景を設定しました");
-    };
-    
-    // 3. 読み込み失敗時の処理
-    imgElement.onerror = function() {
-        alert("【エラー】 " + fileName + " が見つかりません。");
-        console.error("画像読み込み失敗:", fileName);
-    };
-    
-    // 4. 画像を指定（キャッシュ対策付き）
-    imgElement.src = fileName + "?t=" + new Date().getTime();
-}
+    // 1. 画像オブジェクトをメモリ上に作成
+    fabric.Image.fromURL(fileName, function(img, isError) {
+        if (isError) {
+            alert("エラー: " + fileName + " が読み込めません。ファイル名を確認してください。");
+            return;
+        }
 
+        // 2. 背景画像をセットし、セットが完了した「後」で確実に描画を更新する
+        canvas.setBackgroundImage(img, function() {
+            // 背景のサイズと位置を調整
+            img.set({
+                scaleX: canvas.width / img.width,
+                scaleY: canvas.height / img.height,
+                originX: 'left',
+                originY: 'top'
+            });
+            // 画面を強制リフレッシュ
+            canvas.renderAll();
+            console.log("背景描画完了:", fileName);
+        }, {
+            crossOrigin: 'anonymous'
+        });
+    });
+}
         function addNumber(text) {
             alert("数字 " + text + " を追加");
             const t = new fabric.Text(text, { left: 50, top: 50, fontSize: 80, fill: 'red' });
