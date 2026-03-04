@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>lumocardco-hue | v3.0</title>
+    <title>lumocardco-hue | v4.0</title>
     <style>
         :root { --bg: #1a1a1a; --card: #2a2a2a; --accent: #007bff; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
@@ -30,8 +30,8 @@
 
         <div class="controls">
             <label>1. 背景デザインを選択</label>
-            <button onclick="setBg('bg1.jpg')">背景 A</button>
-            <button onclick="setBg('bg2.jpg')">背景 B</button>
+            <button onclick="setBg('画像/背景1.jpg')">背景 A</button>
+            <button onclick="setBg('画像/bg2.jpg')">背景 B</button>
         </div>
 
         <div class="controls">
@@ -44,6 +44,11 @@
             <label>3. ステータス数字を選択</label>
             <button onclick="addBrandElement('99')">No. 99</button>
             <button onclick="addBrandElement('102')">No. 102</button>
+          <button onclick="setBg('画像/外枠1.png')"> A</button>
+        
+        
+        
+        
         </div>
 
         <canvas id="canvas"></canvas>
@@ -68,9 +73,11 @@
                     <label style="display:block; font-size:0.9rem; margin-bottom:5px;">郵便番号</label>
                     <input type="text" id="postal-code" placeholder="123-4567" onchange="fetchAddress()" style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#333; color:white; box-sizing:border-box;">
                 </div>
-                
+ 
+       
                 <div>
                     <label style="display:block; font-size:0.9rem; margin-bottom:5px;">郵便番号から分かる住所</label>
+             
                     <input type="text" id="auto-address" placeholder="自動入力されます" readonly style="width:100%; padding:8px; border-radius:5px; border:1px solid #555; background:#2a2a2a; color:#888; box-sizing:border-box;">
                 </div>
                 
@@ -90,171 +97,6 @@
 
     </div>
 
-
-
-<script>
-        // キャンバス初期化
-        const canvas = new fabric.Canvas('canvas', {
-            width: 400,
-            height: 500,
-            backgroundColor: '#ffffff',
-            preserveObjectStacking: true // 重なり順を維持
-        });
-
-        const status = document.getElementById('status');
-
-        // 背景セット関数
-        function setBg(fileName) {
-            status.textContent = `Loading ${fileName}...`;
-            fabric.Image.fromURL(fileName + '?t=' + Date.now(), function(img, isError) {
-                if (isError) {
-                    alert("画像が見つかりません。ファイル名を確認してください。");
-                    status.textContent = "Error";
-                    return;
-                }
-                canvas.setBackgroundImage(img, function() {
-                    canvas.renderAll();
-                    status.textContent = "Background Set!";
-                }, {
-                    scaleX: canvas.width / img.width,
-                    scaleY: canvas.height / img.height,
-                    crossOrigin: 'anonymous'
-                });
-            });
-        }
-
-        // 人物アップロード & 背景削除
-        document.getElementById('upload').onchange = async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            status.textContent = "AI Removing Background...";
-            try {
-                const blob = await imglyRemoveBackground(file);
-                const url = URL.createObjectURL(blob);
-                fabric.Image.fromURL(url, function(img) {
-                    img.scaleToWidth(300);
-                    canvas.add(img);
-                    canvas.centerObject(img);
-                    canvas.setActiveObject(img);
-                    canvas.renderAll();
-                    status.textContent = "Person Added!";
-                });
-            } catch (err) {
-                status.textContent = "AI Error - Loading Original";
-                const reader = new FileReader();
-                reader.onload = f => fabric.Image.fromURL(f.target.result, img => {
-                    img.scaleToWidth(300);
-                    canvas.add(img);
-                    canvas.centerObject(img);
-                    canvas.renderAll();
-                    status.textContent = "Person Added!";
-                });
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // ロゴ(icon.png)と数字を左下にセット
-        function addBrandElement(num) {
-            status.textContent = "Adding Branding...";
-            
-            // 既存のブランド要素を削除
-            canvas.getObjects().forEach(obj => {
-                if (obj.isBrand) canvas.remove(obj);
-            });
-
-            // ロゴ読み込み
-            fabric.Image.fromURL('icon.png' + '?t=' + Date.now(), function(img) {
-                img.set({
-                    left: 20,
-                    top: canvas.height - 140,
-                    scaleX: 0.12,
-                    scaleY: 0.12,
-                    isBrand: true,
-                    selectable: false
-                });
-
-                const text = new fabric.Text(num, {
-                    left: 20,
-                    top: canvas.height - 85,
-                    fontSize: 70,
-                    fill: '#ff0000',
-                    fontWeight: 'bold',
-                    fontFamily: 'Impact',
-                    isBrand: true,
-                    selectable: false
-                });
-
-                canvas.add(img, text);
-                canvas.bringToFront(img);
-                canvas.bringToFront(text);
-                canvas.renderAll();
-                status.textContent = "Branding Applied!";
-            });
-        }
-
-        // 画像保存
-        function downloadImage() {
-            const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
-            const link = document.createElement('a');
-            link.download = 'lumocard.png';
-            link.href = dataURL;
-            link.click();
-            
-            // フォームセクションを表示
-            document.getElementById('form-section').style.display = 'block';
-        }
-
-        // フォーム送信関数
-        function submitForm() {
-            const name = document.getElementById('name').value;
-            const postalCode = document.getElementById('postal-code').value;
-            const autoAddress = document.getElementById('auto-address').value;
-            const address = document.getElementById('address').value;
-            const birthYear = document.getElementById('birth-year').value;
-            
-            if (!name || !postalCode || !autoAddress || !address || !birthYear) {
-                alert('すべての項目を入力してください');
-                return;
-            }
-            
-            alert(`送信内容:\n名前: ${name}\n郵便番号: ${postalCode}\n住所: ${autoAddress}${address}\n生まれた年: ${birthYear}`);
-            // ここで実際のサーバー送信処理を追加できます
-        }
-
-        // 郵便番号から住所を自動取得する関数
-        function fetchAddress() {
-            const postalCode = document.getElementById('postal-code').value;
-            if (!postalCode || postalCode.length < 7) return;
-            
-            // ハイフンを削除
-            const code = postalCode.replace('-', '');
-            
-            // 郵便番号から住所を取得（JSON API）
-            fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${code}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.results && data.results.length > 0) {
-                        const result = data.results[0];
-                        const fullAddress = result.address1 + result.address2 + result.address3;
-                        document.getElementById('auto-address').value = fullAddress;
-                    } else {
-                        document.getElementById('auto-address').value = '住所が見つかりません';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('auto-address').value = '取得失敗';
-                });
-        }
-
-        // キャンバスを初期状態に戻す関数
-function resetCanvas() {
-    if (confirm("全ての作業を消去して、最初からやり直しますか？")) {
-        location.reload();
-    }
-}
-        
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
