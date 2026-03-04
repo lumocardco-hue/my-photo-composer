@@ -28,19 +28,29 @@
             backgroundColor: '#ffffff'
         });
 
+
         function setBg(fileName) {
-            alert("読み込み開始: " + fileName);
-            fabric.Image.fromURL(fileName, function(img, isError) {
-                if (isError) {
-                    alert("エラー: " + fileName + " がありません。名前を確認してください。");
-                    return;
-                }
-                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-                    scaleX: canvas.width / img.width,
-                    scaleY: canvas.height / img.height
-                });
-            });
+    alert(fileName + " の読み込みを試みます。");
+    
+    // 画像を読み込む
+    fabric.Image.fromURL(fileName, function(img, isError) {
+        if (isError) {
+            // エラーの内容を具体的に表示
+            alert("【エラー】画像が見つかりません。\n確認事項:\n1. GitHubに " + fileName + " はありますか？\n2. 大文字・小文字は合っていますか？");
+            return;
         }
+        
+        // 画像のサイズをキャンバスに合わせる
+        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+            scaleX: canvas.width / img.width,
+            scaleY: canvas.height / img.height,
+            originX: 'left',
+            originY: 'top'
+        });
+        
+        alert("読み込み成功！画面を確認してください。");
+    }, { crossOrigin: 'anonymous' });
+}
 
         function addNumber(text) {
             alert("数字 " + text + " を追加");
