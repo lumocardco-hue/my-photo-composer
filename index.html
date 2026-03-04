@@ -29,32 +29,35 @@
         });
 
 function setBg(fileName) {
-    alert("ステップ1: " + fileName + " を読み込みます。");
+    console.log("読み込み開始:", fileName);
     
-    // 1. まず普通に画像オブジェクトを作る
+    // 1. まずimg要素を作る
     const imgElement = new Image();
     
-    // 2. 読み込みが成功した時の処理
+    // 2. 読み込み成功時の処理
     imgElement.onload = function() {
-        alert("ステップ2: 読み込み成功！キャンバスに描画します。");
+        console.log("画像読み込み成功:", fileName);
         const fabricImg = new fabric.Image(imgElement);
-        canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas), {
-            scaleX: canvas.width / imgElement.width,
-            scaleY: canvas.height / imgElement.height
-        });
-    };
-
-    // 3. 読み込みが失敗した時の処理
-    imgElement.onerror = function() {
-        alert("【エラー】 " + fileName + " が読み込めません。\nファイル名がGitHubと完全に一致（大文字小文字も）しているか確認してください。");
-    };
-
-    // 4. 画像の場所を指定（キャッシュ対策の呪文付き）
-    imgElement.src = fileName + "?t=" + new Date().getTime();
-}
         
-        alert("読み込み成功！画面を確認してください。");
-    }, { crossOrigin: 'anonymous' });
+        canvas.setBackgroundImage(fabricImg, function() {
+            canvas.renderAll();
+        }, {
+            scaleX: canvas.width / imgElement.width,
+            scaleY: canvas.height / imgElement.height,
+            originX: 'left',
+            originY: 'top'
+        });
+        alert("背景を設定しました");
+    };
+    
+    // 3. 読み込み失敗時の処理
+    imgElement.onerror = function() {
+        alert("【エラー】 " + fileName + " が見つかりません。");
+        console.error("画像読み込み失敗:", fileName);
+    };
+    
+    // 4. 画像を指定（キャッシュ対策付き）
+    imgElement.src = fileName + "?t=" + new Date().getTime();
 }
 
         function addNumber(text) {
