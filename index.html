@@ -6,25 +6,47 @@
     <title>lumocardco-hue</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>lumocardco-hue</h1>
         <div class="controls">
-            <label>背景:</label>
-            <button onclick="window.setBg('bg1.jpg')">背景A</button>
-            <button onclick="window.setBg('bg2.jpg')">背景B</button>
+            <button onclick="setBg('bg1.jpg')">背景A</button>
+            <button onclick="setBg('bg2.jpg')">背景B</button>
         </div>
         <div class="controls">
-            <label>数字:</label>
-            <button onclick="window.addNumber('99')">99</button>
-            <button onclick="window.addNumber('102')">102</button>
+            <button onclick="addNumber('99')">99</button>
+            <button onclick="addNumber('102')">102</button>
         </div>
-        <input type="file" id="upload" accept="image/*">
         <canvas id="canvas"></canvas>
-        <button id="download" class="main-btn">画像を保存する</button>
     </div>
-    <script src="script.js?v=2"></script>
+
+    <script>
+        const canvas = new fabric.Canvas('canvas', {
+            width: 400,
+            height: 500,
+            backgroundColor: '#ffffff'
+        });
+
+        function setBg(fileName) {
+            alert("読み込み開始: " + fileName);
+            fabric.Image.fromURL(fileName, function(img, isError) {
+                if (isError) {
+                    alert("エラー: " + fileName + " がありません。名前を確認してください。");
+                    return;
+                }
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    scaleX: canvas.width / img.width,
+                    scaleY: canvas.height / img.height
+                });
+            });
+        }
+
+        function addNumber(text) {
+            alert("数字 " + text + " を追加");
+            const t = new fabric.Text(text, { left: 50, top: 50, fontSize: 80, fill: 'red' });
+            canvas.add(t);
+        }
+    </script>
 </body>
 </html>
