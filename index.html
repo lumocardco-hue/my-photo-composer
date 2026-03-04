@@ -3,66 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>lumocardco-hue</title>
-    <link rel="stylesheet" href="style.css">
+    <title>lumocardco-hue | v2.0</title>
+    <style>
+        :root { --bg: #1a1a1a; --card: #2a2a2a; --accent: #007bff; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .container { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 420px; }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; color: #eee; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        label { grid-column: 1 / -1; text-align: left; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        button { background: #444; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #555; }
+        .main-btn { grid-column: 1 / -1; background: var(--accent); font-weight: bold; padding: 15px; margin-top: 10px; }
+        .main-btn:active { transform: scale(0.98); }
+        canvas { border-radius: 10px; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-width: 100%; height: auto !important; }
+        #status { font-size: 0.7rem; color: var(--accent); margin-top: 10px; height: 1em; }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
 </head>
 <body>
-    <div class="version-info" id="versionInfo">v1.0</div>
+
     <div class="container">
         <h1>lumocardco-hue</h1>
+        
+        <div id="status">Ready</div>
+
         <div class="controls">
-            <button onclick="setBg('bg1.jpg')">背景A</button>
-            <button onclick="setBg('bg2.jpg')">背景B</button>
+            <label>1. 背景デザインを選択</label>
+            <button onclick="setBg('bg1.jpg')">背景 A</button>
+            <button onclick="setBg('bg2.jpg')">背景 B</button>
         </div>
+
         <div class="controls">
-            <button onclick="addNumber('99')">99</button>
-            <button onclick="addNumber('102')">102</button>
+            <label>2. 人物写真をアップロード (AI背景削除)</label>
+            <input type="file" id="upload" accept="image/*" style="display:none">
+            <button onclick="document.getElementById('upload').click()" class="main-btn">写真を選択する</button>
         </div>
+
+        <div class="controls">
+            <label>3. ステータス数字を選択</label>
+            <button onclick="addBrandElement('99')">No. 99</button>
+            <button onclick="addBrandElement('102')">No. 102</button>
+        </div>
+
         <canvas id="canvas"></canvas>
+
+        <button onclick="downloadImage()" class="main-btn" style="background:#28a745;">完成した画像を保存</button>
     </div>
 
     <script>
+        // キャンバス初期化
         const canvas = new fabric.Canvas('canvas', {
             width: 400,
             height: 500,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            preserveObjectStacking: true // 重なり順を維持
         });
 
-function setBg(fileName) {
-    // ローディング表示
-    document.getElementById('versionInfo').textContent = 'Loading...';
-    
-    // 1. 画像オブジェクトをメモリ上に作成
-    fabric.Image.fromURL(fileName, function(img, isError) {
-        if (isError) {
-            alert("エラー: " + fileName + " が読み込めません。ファイル名を確認してください。");
-            return;
+        const status = document.getElementById('status');
+
+        // 背景セット関数
+        function setBg(fileName) {
+            status.textContent = `Loading ${fileName}...`;
+            fabric.Image.fromURL(fileName + '?t=' + Date.now(), function(img, isError) {
+                if (isError) {
+                    alert("画像が見つかりません。ファイル名を確認してください。");
+                    status.textContent = "Error";
+                    return;
+                }
+                canvas.setBackgroundImage(img, function() {
+                    canvas.renderAll();
+                    status.textContent = "Background Set!";
+                }, {
+                    scaleX: canvas.width / img.width,
+                    scaleY: canvas.height / img.height,
+                    crossOrigin: 'anonymous'
+                });
+            });
         }
 
-        // 2. 背景画像をセットし、セットが完了した「後」で確実に描画を更新する
-        canvas.setBackgroundImage(img, function() {
-            // 背景のサイズと位置を調整
-            img.set({
-                scaleX: canvas.width / img.width,
-                scaleY: canvas.height / img.height,
-                originX: 'left',
-                originY: 'top'
+        // 人物アップロード & 背景削除
+        document.getElementById('upload').onchange = async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            status.textContent = "AI Removing Background...";
+            try {
+                const blob = await imglyRemoveBackground(file);
+                const url = URL.createObjectURL(blob);
+                fabric.Image.fromURL(url, function(img) {
+                    img.scaleToWidth(300);
+                    canvas.centerObject(img);
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                    status.textContent = "Person Added!";
+                });
+            } catch (err) {
+                status.textContent = "AI Error - Loading Original";
+                const reader = new FileReader();
+                reader.onload = f => fabric.Image.fromURL(f.target.result, img => {
+                    img.scaleToWidth(300);
+                    canvas.add(img);
+                });
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // ロゴ(icon.png)と数字を左下にセット
+        function addBrandElement(num) {
+            status.textContent = "Adding Branding...";
+            
+            // 既存のブランド要素を削除
+            canvas.getObjects().forEach(obj => {
+                if (obj.isBrand) canvas.remove(obj);
             });
-            // 画面を強制リフレッシュ
-            canvas.renderAll();
-            // 読み込み完了
-            document.getElementById('versionInfo').textContent = 'v1.0';
-            console.log("背景描画完了:", fileName);
-        }, {
-            crossOrigin: 'anonymous'
-        });
-    });
-}
-        function addNumber(text) {
-            alert("数字 " + text + " を追加");
-            const t = new fabric.Text(text, { left: 50, top: 50, fontSize: 80, fill: 'red' });
-            canvas.add(t);
+
+            // ロゴ読み込み
+            fabric.Image.fromURL('icon.png' + '?t=' + Date.now(), function(img) {
+                img.set({
+                    left: 20,
+                    top: canvas.height - 140,
+                    scaleX: 0.12,
+                    scaleY: 0.12,
+                    isBrand: true,
+                    selectable: false
+                });
+
+                const text = new fabric.Text(num, {
+                    left: 20,
+                    top: canvas.height - 85,
+                    fontSize: 70,
+                    fill: '#ff0000',
+                    fontWeight: 'bold',
+                    fontFamily: 'Impact',
+                    isBrand: true,
+                    selectable: false
+                });
+
+                canvas.add(img, text);
+                canvas.bringToFront(img);
+                canvas.bringToFront(text);
+                canvas.renderAll();
+                status.textContent = "Branding Applied!";
+            });
+        }
+
+        // 画像保存
+        function downloadImage() {
+            const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
+            const link = document.createElement('a');
+            link.download = 'lumocard.png';
+            link.href = dataURL;
+            link.click();
         }
     </script>
 </body>
