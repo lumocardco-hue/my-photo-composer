@@ -83,16 +83,16 @@ button {
 
 /* 各ボタンに割り当てる背景画像パス */
 .bg-btn1 {
-  background-image: url("画像/背景1.jpg");
+  background-image: url("画像/back1.jpg");
 }
 .bg-btn2 {
-  background-image: url("画像/bg1.jpg");
+  background-image: url("画像/back2.jpg");
 }
 .bg-btn3 {
-  background-image: url("画像/bg2.jpg");
+  background-image: url("画像/back3.jpg");
 }
 .bg-btn4 {
-  background-image: url("画像/背景2.png");
+  background-image: url("画像/back4.png");
 }
 
 /* ロゴ選択ボタン：img-btnより少し横幅がある設定 */
