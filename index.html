@@ -3,457 +3,202 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>写真の作成</title>
-
+    <title>ご購入手続き - 確認</title>
+    <!-- Stripe.js v3 を読み込む -->
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
-      :root {
-        --bg: #1a1a1a;
-        --card: #2a2a2a;
-        --accent: #007bff;
-      }
-
       body {
-        font-family: "Helvetica Neue", Arial, sans-serif;
-        background: var(--bg);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        margin: 20px;
+        line-height: 1.6;
+        background: #f0f2f5;
+        color: #333;
       }
-
       .container {
-        background: var(--card);
-        padding: 20px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        width: 100%;
-        max-width: 420px;
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-
       h1 {
-        font-size: 1.5rem;
+        text-align: center;
+        color: #1c1e21;
         margin-bottom: 20px;
-        color: #eee;
       }
-
-      /* General style for control groups */
-      .controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 15px;
+      .preview-image {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .confirm-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+      }
+      .confirm-box p {
+        margin: 8px 0;
+      }
+      .btn-group {
         margin-top: 30px;
-      }
-
-      label {
-        grid-column: 1 / -1;
-        text-align: left;
-        font-size: 0.8rem;
-        color: #888;
-        margin-bottom: 5px;
-      }
-
-      /* Base button style */
-      button {
-        background: #444;
-        border: none;
-        color: white;
-        padding: 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      button:hover {
-        background: #555;
-      }
-
-      /* Override for the background selector control group */
-      .controls.bg-select {
-        display: flex; /* Override display: grid from .controls */
-        grid-template-columns: none; /* remove grid columns */
-        gap: 15px;
-        overflow-x: auto; /* 横にスクロールさせる */
-        padding: 5px;
-      }
-
-      .main-btn {
-        grid-column: 1 / -1;
-        background: var(--accent);
-        font-weight: bold;
-        padding: 15px;
-        margin-top: 10px;
-      }
-      .main-btn:active {
-        transform: scale(0.98);
-      }
-
-      /* Style for image buttons in the horizontal scroller */
-      .bg-select .img-btn,
-      .logo-options .img-btn {
-        flex-shrink: 0; /* ボタンが縮まないようにする */
-        height: 120px;
-        aspect-ratio: 3/4;
-        background-size: cover;
-        background-position: center;
-        border-radius: 8px;
-        padding: 0; /* remove padding from base button style */
-        border: none;
-      }
-
-      .logo-options {
         display: flex;
+        justify-content: space-between;
         gap: 15px;
-        overflow-x: auto;
-        padding: 5px;
       }
-
-      /* Background image assignments */
-      .bg-btn1 {
-        background-image: url("画像/背景1.jpg");
+      button,
+      .back-btn {
+        width: 100%;
+        padding: 12px 20px;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
       }
-      .bg-btn2 {
-        background-image: url("画像/背景炎.png");
+      .back-btn {
+        background: #e4e6eb;
+        border: none;
+        text-decoration: none;
+        color: #050505;
       }
-      .bg-btn3 {
-        /* 注: bg3.jpgが見つからないため、代わりにbg2.jpgを指定しました */
-        background-image: url("画像/背景雷.png");
+      .submit-btn {
+        background: #1877f2;
+        border: none;
+        color: #fff;
       }
-      .bg-btn4 {
-        /* 注: bg4.jpgが見つかりません */
-        background-image: url("画像/背景2.png");
+      .submit-btn:disabled {
+        background: #a0bdf0;
+        cursor: not-allowed;
       }
-
-      /* Frame image assignments */
-      .frame-btn1 {
-        background-image: url("画像/外枠1.png");
-      }
-      .frame-btn2 {
-        background-image: url("画像/外枠2.png");
-      }
-      .frame-btn3 {
-        background-image: url("画像/外枠3.png");
-      }
-      .frame-btn4 {
-        background-image: url("画像/外枠4.png");
-      }
-
-      /* Logo image assignments */
-      .icon-btn1 {
-        background-image: url("画像/icon.png");
-      }
-      .icon-btn2 {
-        background-image: url("画像/icon2.png");
-      }
-      .icon-btn3 {
-        background-image: url("画像/icon3.png");
-      }
-      .icon-btn4 {
-        background-image: url("画像/icon4.png");
-      }
-
-      #status {
-        font-size: 0.7rem;
-        color: var(--accent);
-        margin-top: 10px;
-        height: 1em;
+      hr {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 20px 0;
       }
     </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
   </head>
   <body>
     <div class="container">
-      <div
-        id="version-display"
-        style="
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          font-size: 12px;
-          color: #666;
-        "
-      ></div>
-      <div style="text-align: center">
-        <!--1. 背景デザインを選択-->
+      <h1>入力内容の確認</h1>
+      <p>以下の内容でよろしければ「注文を確定する」を押してください。</p>
 
-        <h1>写真の作成</h1>
-
-        <div id="status">Ready</div>
-
-        <div class="controls">
-          <label>1. 背景デザインを選択</label>
-        </div>
-
-        <div class="controls bg-select">
-          <button
-            onclick="setBg('画像/背景1.jpg')"
-            class="img-btn bg-btn1"
-          ></button>
-
-          <button
-            onclick="setBg('画像/背景炎.png')"
-            class="img-btn bg-btn2"
-          ></button>
-
-          <!-- ここに3つ目の背景画像 -->
-          <button
-            onclick="setBg('画像/背景雷.png')"
-            class="img-btn bg-btn3"
-          ></button>
-
-          <!-- ここに4つ目の背景画像 -->
-          <button
-            onclick="setBg('画像/背景2.png')"
-            class="img-btn bg-btn4"
-          ></button>
-        </div>
+      <div id="preview-image-container">
+        <!-- プレビュー画像がここに挿入されます -->
       </div>
-      <div class="controls">
-        <!-- 2. 人物写真をアップロード -->
-        <label>2. 人物写真をアップロード</label>
-        <input type="file" id="upload" accept="image/*" style="display: none" />
-        <button
-          onclick="document.getElementById('upload').click()"
-          class="main-btn"
-        >
-          写真を選択する
+
+      <div class="confirm-box" id="confirm-details">
+        <!-- 確認詳細がここに挿入されます -->
+      </div>
+
+      <div class="btn-group">
+        <a href="index.html" class="back-btn">修正する</a>
+        <button id="submit-btn" class="submit-btn" onclick="submitOrder()">
+          お支払いに進む
         </button>
-      </div>
-
-      <div class="controls">
-        <!--3. ステータスを選択-->
-
-        <label>3. ステータスを選択</label>
-
-        <button onclick="addBrandElement('99')">99</button>
-        <button onclick="addBrandElement('102')">102</button>
-        <select
-          id="position-select"
-          onchange="updatePositionText()"
-          style="
-            grid-column: 1 / -1;
-            padding: 10px;
-            border-radius: 8px;
-            background: #444;
-            color: white;
-            border: none;
-            margin-bottom: 10px;
-          "
-        >
-          <option value="FW">FW (フォワード)</option>
-          <option value="MF">MF (ミッドフィルダー)</option>
-          <option value="DF">DF (ディフェンダー)</option>
-          <option value="GK">GK (ゴールキーパー)</option>
-        </select>
-      </div>
-      <div class="logo-selection-container">
-        <!--4. ロゴの選択-->
-
-        <label>4. ロゴの選択</label>
-
-        <div id="logo-options-wrapper" class="logo-options">
-          <button
-            onclick="setLogo('画像/icon.png')"
-            class="img-btn icon-btn1"
-          ></button>
-
-          <button
-            onclick="setLogo('画像/icon2.png')"
-            class="img-btn icon-btn2"
-          ></button>
-
-          <button
-            onclick="setLogo('画像/icon3.png')"
-            class="img-btn icon-btn3"
-          ></button>
-
-          <button
-            onclick="setLogo('画像/icon4.png')"
-            class="img-btn icon-btn4"
-          ></button>
-        </div>
-      </div>
-      <div>
-        <!--5. 枠の選択-->
-        <label>5. 枠の選択</label>
-        <div class="controls bg-select">
-          <button
-            onclick="setBg('画像/外枠1.png')"
-            class="img-btn frame-btn1"
-          ></button>
-          <button
-            onclick="setBg('画像/外枠2.png')"
-            class="img-btn frame-btn2"
-          ></button>
-          <button
-            onclick="setBg('画像/外枠3.png')"
-            class="img-btn frame-btn3"
-          ></button>
-          <button
-            onclick="setBg('画像/外枠4.png')"
-            class="img-btn frame-btn4"
-          ></button>
-        </div>
-      </div>
-      <canvas id="canvas"></canvas
-      ><!--プレビュー-->
-
-      <div class="controls">
-        <button onclick="downloadImage()" style="background: #28a745">
-          確定
-        </button>
-        <button onclick="resetCanvas()" style="background: #dc3545">
-          最初からやり直す
-        </button>
-      </div>
-
-      <div
-        id="form-section"
-        style="
-          display: none;
-          margin-top: 30px;
-          width: 100%;
-          border-top: 1px solid #444;
-          padding-top: 20px;
-        "
-      >
-        <label
-          style="
-            color: var(--accent);
-            font-weight: bold;
-            display: block;
-            margin-bottom: 15px;
-            text-align: center;
-          "
-        >
-          4. 送付先情報を入力してください
-        </label>
-
-        <form style="display: flex; flex-direction: column; gap: 15px">
-          <div>
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 5px"
-              >名前</label
-            >
-            <input
-              type="text"
-              id="name"
-              placeholder="山田太郎"
-              style="
-                width: 100%;
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #555;
-                background: #333;
-                color: white;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div>
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 5px"
-              >郵便番号</label
-            >
-            <input
-              type="text"
-              id="postal-code"
-              placeholder="123-4567"
-              onchange="fetchAddress()"
-              style="
-                width: 100%;
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #555;
-                background: #333;
-                color: white;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div>
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 5px"
-              >郵便番号から分かる住所</label
-            >
-
-            <input
-              type="text"
-              id="auto-address"
-              placeholder="自動入力されます"
-              readonly
-              style="
-                width: 100%;
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #555;
-                background: #2a2a2a;
-                color: #888;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div>
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 5px"
-              >番地などの追加住所</label
-            >
-            <input
-              type="text"
-              id="address"
-              placeholder="1丁目2番3号"
-              style="
-                width: 100%;
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #555;
-                background: #333;
-                color: white;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <div>
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 5px"
-              >生まれた年</label
-            >
-            <input
-              type="number"
-              id="birth-year"
-              placeholder="1990"
-              min="1900"
-              max="2030"
-              style="
-                width: 100%;
-                padding: 8px;
-                border-radius: 5px;
-                border: 1px solid #555;
-                background: #333;
-                color: white;
-                box-sizing: border-box;
-              "
-            />
-          </div>
-
-          <button
-            type="button"
-            onclick="submitForm()"
-            style="
-              background: var(--accent);
-              grid-column: 1/-1;
-              font-weight: bold;
-              padding: 12px;
-              margin-top: 10px;
-            "
-          >
-            お支払いへ
-          </button>
-        </form>
       </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+      // ================= CONFIG =================
+      const GAS_URL =
+        "https://script.google.com/macros/s/AKfycbx_BrHzdGC99V8fNMIsdJCjajuM67OPhCj4f5iSNK4bVx8oXMbggF079zRiYuhsovg1/exec";
+      const STRIPE_PUBLISHABLE_KEY =
+        "pk_test_51T7mqvDLyro3HnGt8BxSF7Y3rQ3vKnuZiUdrpugHDzeAExH0aSr9cg7ZmyhbRD1pNeyE3n1KRx5zEhKjTPyzqlNo00HrVDw7tV";
+      // ==========================================
+
+      const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+      // ページ読み込み時にセッションストレージからデータを表示
+      window.onload = function () {
+        const orderDataString = sessionStorage.getItem("orderData");
+        if (!orderDataString) {
+          alert(
+            "注文データが見つかりません。お手数ですが、もう一度最初からお試しください。",
+          );
+          window.location.href = "index.html";
+          return;
+        }
+
+        const data = JSON.parse(orderDataString);
+
+        // プレビュー画像を表示
+        const imgContainer = document.getElementById("preview-image-container");
+        imgContainer.innerHTML = `<img src="${data.image}" alt="プレビュー" class="preview-image">`;
+
+        // 詳細情報を表示
+        const detailsContainer = document.getElementById("confirm-details");
+        detailsContainer.innerHTML = `
+          <style>
+              .info-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+              .info-row { display: flex; border-bottom: 1px solid #edf2f7; padding-bottom: 8px; align-items: flex-start; }
+              .info-label { width: 120px; font-size: 0.85rem; color: #718096; font-weight: bold; flex-shrink: 0; }
+              .info-value { font-size: 1rem; color: #2d3748; word-break: break-all; }
+              .important-notice { background-color: #fff5f5; border: 1px solid #feb2b2; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+              .important-notice strong { color: #c53030; font-size: 0.9rem; line-height: 1.4; }
+          </style>
+          <div class="info-list">
+              <div class="info-row"><div class="info-label">お名前</div><div class="info-value">${data.name} 様</div></div>
+              <div class="info-row"><div class="info-label">郵便番号</div><div class="info-value">〒${data.postalCode}</div></div>
+              <div class="info-row"><div class="info-label">お届け先</div><div class="info-value">${data.autoAddress}${data.address}</div></div>
+              <div class="info-row"><div class="info-label">生まれた年</div><div class="info-value">${data.birthYear} 年</div></div>
+              <div class="info-row"><div class="info-label">ステータス</div><div class="info-value">No. ${data.playerNumber} / ${data.playerPosition}</div></div>
+          </div>
+          <div class="important-notice"><span>⚠️</span><strong>決済後のキャンセル・変更はできません。<br>入力内容に間違いがないか、今一度ご確認ください。</strong></div>`;
+      };
+
+      // 【修正】注文処理：GASにStripeセッション作成を依頼し、返ってきたIDでチェックアウトにリダイレクトする
+      async function submitOrder() {
+        const submitBtn = document.getElementById("submit-btn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "処理中...";
+
+        const orderDataString = sessionStorage.getItem("orderData");
+        if (!orderDataString) {
+          alert("セッションが切れました。再度情報を入力してください。");
+          window.location.href = "index.html";
+          return;
+        }
+
+        try {
+          // 1. GASに注文データを送り、StripeセッションIDの作成を依頼する
+          const response = await fetch(GAS_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8", // GASでPOSTを受け取るための定型句
+            },
+            body: orderDataString, // orderDataをそのまま送る
+          });
+
+          if (!response.ok) {
+            throw new Error(`サーバーエラー: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.error) {
+            throw new Error(`セッション作成エラー: ${result.error}`);
+          }
+
+          // 2. 受け取ったセッションIDを使ってStripeの決済ページにリダイレクト
+          const { error } = await stripe.redirectToCheckout({
+            sessionId: result.sessionId,
+          });
+
+          if (error) {
+            throw new Error(`リダイレクトエラー: ${error.message}`);
+          }
+        } catch (error) {
+          console.error("注文処理中にエラー:", error);
+          alert(`エラーが発生しました: ${error.message}`);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "お支払いに進む";
+        }
+      }
+    </script>
   </body>
 </html>
