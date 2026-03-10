@@ -115,9 +115,14 @@ function generateButtons() {
 // レイヤー順序の整理ルール
 function sortLayers() {
   const objects = canvas.getObjects();
-  // 人物(1) -> ブランド要素(2) -> 外枠(最前面)
-  objects.filter((o) => o.isPerson).forEach((o) => o.moveTo(1));
-  objects.filter((o) => o.isBrand).forEach((o) => o.moveTo(2));
+  // 下から 写真 -> ステータス -> ロゴ -> 枠 の順
+  // isPerson を 0番目(最背面)のレイヤーグループに
+  objects.filter((o) => o.isPerson).forEach((o) => o.moveTo(0));
+  // isStatus を 10番目のレイヤーグループに (写真よりは上)
+  objects.filter((o) => o.isStatus).forEach((o) => o.moveTo(10));
+  // isLogo を 20番目のレイヤーグループに (ステータスよりは上)
+  objects.filter((o) => o.isLogo).forEach((o) => o.moveTo(20));
+  // isFrame を最前面に
   objects.filter((o) => o.isFrame).forEach((o) => o.bringToFront());
   canvas.renderAll();
 }
@@ -126,7 +131,11 @@ function sortLayers() {
 function setBg(fileName) {
   statusLabel.textContent = `Loading ${fileName}...`;
 
-  if (fileName.includes("外枠") || fileName.includes("frame")) {
+  if (
+    fileName.includes("外枠") ||
+    fileName.includes("frame") ||
+    fileName.includes("waku")
+  ) {
     selectedFramePath = fileName;
     fabric.Image.fromURL(
       fileName + "?t=" + Date.now(),
@@ -177,7 +186,7 @@ function setBg(fileName) {
 function setLogo(fileName) {
   selectedLogoPath = fileName;
   canvas.getObjects().forEach((obj) => {
-    if (obj.isBrand && obj.type === "image") canvas.remove(obj);
+    if (obj.isLogo) canvas.remove(obj);
   });
 
   fabric.Image.fromURL(
@@ -188,7 +197,7 @@ function setLogo(fileName) {
         top: canvas.height - 420,
         scaleX: 0.12,
         scaleY: 0.12,
-        isBrand: true,
+        isLogo: true,
         selectable: false,
       });
       canvas.add(img);
@@ -208,7 +217,10 @@ document.getElementById("upload").onchange = async function (e) {
   statusLabel.textContent = "AI Removing Background...";
 
   try {
-    const blob = await imglyRemoveBackground(file);
+    const blob = await imglyRemoveBackground(file, {
+      publicPath:
+        "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/assets/",
+    });
     const url = URL.createObjectURL(blob);
     fabric.Image.fromURL(url, function (img) {
       img.scaleToWidth(300);
@@ -240,7 +252,7 @@ function addBrandElement(num) {
   selectedPosition = document.getElementById("position-select").value;
 
   canvas.getObjects().forEach((obj) => {
-    if (obj.isBrand && obj.type === "text") canvas.remove(obj);
+    if (obj.isStatus) canvas.remove(obj);
   });
 
   const numText = new fabric.Text(String(num), {
@@ -250,7 +262,7 @@ function addBrandElement(num) {
     fill: "#ffffff",
     fontWeight: "bold",
     fontFamily: "Impact",
-    isBrand: true,
+    isStatus: true,
     selectable: false,
   });
 
@@ -264,7 +276,7 @@ function addBrandElement(num) {
     paintFirst: "stroke",
     fontWeight: "bold",
     fontFamily: "Arial",
-    isBrand: true,
+    isStatus: true,
     selectable: false,
   });
 
@@ -311,8 +323,7 @@ function showConfirmModal() {
 
   // キャンバスを画像化（multiplier:2で高画質化）
   const highResImg = canvas.toDataURL({
-    format: "jpeg",
-    quality: 0.8,
+    format: "png", // jpeg -> png に変更して透明度を維持
     multiplier: 2.0,
   });
 
