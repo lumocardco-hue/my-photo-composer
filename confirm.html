@@ -113,8 +113,30 @@
 
       const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-      // ページ読み込み時にセッションストレージからデータを表示
+      // ページ読み込み時の処理を更新
       window.onload = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get("status");
+
+        // Stripeからのリダイレクトを処理
+        if (status === "success") {
+          // 成功した場合、ページの内容を書き換える
+          document.querySelector(".container").innerHTML = `
+            <h1>決済が完了しました！</h1>
+            <p>ご注文いただきありがとうございます。商品の到着まで今しばらくお待ちください。</p>
+            <a href="index.html" class="back-btn" style="text-align: center; display: block; width: fit-content; margin: 20px auto;">トップページに戻る</a>
+          `;
+          // 古いセッションデータをクリア
+          sessionStorage.removeItem("orderData");
+          return;
+        } else if (status === "cancel") {
+          // キャンセルされた場合、トップページにリダイレクト
+          alert("決済がキャンセルされました。");
+          window.location.href = "index.html";
+          return;
+        }
+
+        // 通常の確認ページ表示処理
         const orderDataString = sessionStorage.getItem("orderData");
         if (!orderDataString) {
           alert(
