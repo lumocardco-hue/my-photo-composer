@@ -34,6 +34,9 @@ const canvas = new fabric.Canvas("canvas", {
 
 const statusLabel = document.getElementById("status");
 
+// ★★★ Stripe公開鍵（Stripeダッシュボードでコピーした公開鍵を貼り付け）★★★
+const stripe = Stripe("pk_test_51T7mqvDLyro3HnGt8BxSF7Y3rQ3vKnuZiUdrpugHDzeAExH0aSr9cg7ZmyhbRD1pNeyE3n1KRx5zEhKjTPyzqlNo00HrVDw7tV"); // Replace with your actual publishable key
+
 // ==========================================
 // 2. マスターデータの読み込みとボタン生成
 // ==========================================
@@ -61,7 +64,6 @@ function generateButtons() {
     background: document.getElementById("bg-container"),
     icon: document.getElementById("logo-container"),
     frame: document.getElementById("frame-container"),
-    status: document.getElementById("status-container"),
   };
 
   // 各コンテナを一旦空にする
@@ -70,6 +72,11 @@ function generateButtons() {
   });
 
   masterData.forEach((item) => {
+    // 'status' category is now hardcoded in index.html, so we only process the others.
+    if (!containers[item.category]) {
+      return;
+    }
+
     const btn = document.createElement("button");
 
     if (item.category === "background") {
@@ -96,14 +103,6 @@ function generateButtons() {
         setBg(item.filePath); // 枠も背景と同じ処理（filePathに「外枠」が含まれる判定）
       };
       containers.frame.appendChild(btn);
-    } else if (item.category === "status") {
-      btn.innerText = item.itemName;
-      // 数字ボタンは画像ではないので専用クラスを当てる
-      btn.onclick = () => {
-        selectedItems.status = item.itemId; // IDを記録
-        addBrandElement(item.itemName);
-      };
-      containers.status.appendChild(btn);
     }
   });
 }
@@ -248,6 +247,14 @@ document.getElementById("upload").onchange = async function (e) {
 
 // ステータス（数字とポジション）の描画
 function addBrandElement(num) {
+  // masterDataから対応するstatusアイテムを探してIDを記録する
+  const statusItem = masterData.find(
+    (item) => item.category === "status" && item.itemName == num,
+  );
+  if (statusItem) {
+    selectedItems.status = statusItem.itemId;
+  }
+
   selectedNumber = num;
   selectedPosition = document.getElementById("position-select").value;
 
@@ -311,8 +318,8 @@ function fetchAddress() {
     });
 }
 
-// 最終確認ページへデータを渡して遷移
-function showConfirmModal() {
+// Stripe決済ページへリダイレクト
+async function redirectToCheckout() {
   const name = document.getElementById("name").value;
   const agree = document.getElementById("agree-terms").checked;
 
@@ -321,13 +328,14 @@ function showConfirmModal() {
     return;
   }
 
-  // キャンバスを画像化（multiplier:2で高画質化）
+  statusLabel.textContent = "画像を生成しています...";
+  // キャンバスを画像化
   const highResImg = canvas.toDataURL({
-    format: "png", // jpeg -> png に変更して透明度を維持
+    format: "png",
     multiplier: 2.0,
   });
 
-  // 送信用データオブジェクト（スプシIDを含める）
+  // 送信用データ（ユーザーのGASに合わせて画像データを含める）
   const orderData = {
     orderId: "ORD-" + Date.now(),
     name: name,
@@ -337,8 +345,7 @@ function showConfirmModal() {
     birthYear: document.getElementById("birth-year").value,
     playerNumber: selectedNumber,
     playerPosition: selectedPosition,
-    image: highResImg,
-    // セキュリティ：パスではなくスプシのIDを送る
+    image: highResImg, // 画像データを追加
     usedItems: [
       selectedItems.background,
       selectedItems.icon,
@@ -347,11 +354,13 @@ function showConfirmModal() {
     ]
       .filter(Boolean)
       .join(", "),
-    // 予備としてパスも保持
     details: `背景:${selectedBgPath}, ロゴ:${selectedLogoPath}, 枠:${selectedFramePath}, 番号:${selectedNumber}, ポジション:${selectedPosition}`,
   };
 
+  // 念のためsessionStorageにも保存
   sessionStorage.setItem("orderData", JSON.stringify(orderData));
+
+  // 確認ページへリダイレクト
   window.location.href = "confirm.html";
 }
 
