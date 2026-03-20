@@ -103,3 +103,120 @@ button {
   padding: 0;
   border: 1px solid #888;
 }
+
+/* ==========================================
+// 5. カスタム画像操作 (追加)
+// ========================================== */
+
+.custom-image-container {
+  margin-top: 20px;
+  border-top: 1px solid #444;
+  padding-top: 20px;
+}
+
+.custom-image-container label,
+.text-tool-container label {
+  display: block;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+/* 不要になったコントロールを非表示 */
+#custom-image-controls {
+  display: none;
+}
+
+
+/* ==========================================
+// 6. テキストツール操作 (追加)
+// ========================================== */
+
+.text-tool-container {
+  margin-top: 20px;
+  border-top: 1px solid #444;
+  padding-top: 20px;
+}
+
+#text-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #555;
+  background: #333;
+  color: white;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.text-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center; /* スライダーを垂直方向に中央揃え */
+}
+
+#font-select {
+  padding: 10px;
+  border-radius: 8px;
+  background: #444;
+  color: white;
+  border: none;
+}
+
+#add-text-btn {
+    background-color: #17a2b8;
+    margin-top: 10px;
+    font-size: 1rem;
+}
+
+
+/* 汎用的なスライダーのスタイル */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #555;
+  border-radius: 5px;
+  outline: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+input[type="range"]:hover {
+  opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: #007bff;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: #007bff;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* skill-itemの中にある画像タグ(img)は、クラス名の有無に関わらず強制的に小さくする */
+.skill-item img {
+  width: 1px;  /* 必要に応じて数値を調整してください */
+  height: 30px; /* 必要に応じて数値を調整してください */
+  object-fit: contain; /* 画像の縦横比を崩さずに綺麗に収める設定 */
+}
+
+/* 既存のコードも少し改良 */
+.skill-icon {
+  height: 1em;
+  width: auto; /* 縦横比が潰れないように追記することをおすすめします */
+}
