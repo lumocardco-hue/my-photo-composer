@@ -6,21 +6,15 @@
     <title>写真の作成</title>
 
     <style>
-html {
-  /* 画面の高さに合わせる（コンテンツが長ければ伸びる） */
-  min-height: 100vh;
-  
-  /* 背景画像の設定 */
-  background-image: url("画像/background.jpg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  
-  /* 画像を画面いっぱいに広げ、アスペクト比を維持して切り抜く */
-  background-size: cover;
-  
-  /* スクロールしても背景を固定する（これを入れると画面全体に固定されます） */
-  background-attachment: fixed;
-}
+    <style>
+      html {
+        height: 230%;
+        /* background-attachment: fixed; は削除します */
+        background-image: url("画像/background.jpg");
+        background-position: center 0px; /* 初期位置 */
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
       :root {
         --bg: #1a1a1a2d;
         --card: #2a2a2ae1;
