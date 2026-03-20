@@ -7,38 +7,46 @@
     <!-- Stripe.js v3 を読み込む -->
     <script src="https://js.stripe.com/v3/"></script>
     <style>
+      html {
+        height: 100%;
+        background-image: url("画像/background.jpg");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+      }
       body {
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
         margin: 20px;
         line-height: 1.6;
-        background: #f0f2f5;
         color: #333;
+        background: none;
       }
       .container {
         max-width: 600px;
         margin: auto;
-        background: #fff;
+        background: #343434d5;
         padding: 30px;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
       h1 {
         text-align: center;
-        color: #1c1e21;
+        color: #ffffff;
         margin-bottom: 20px;
       }
       .preview-image {
         width: 100%;
-        border: 1px solid #ddd;
+        border: 1px solid #ffffff;
         border-radius: 8px;
         margin-bottom: 20px;
       }
       .confirm-box {
-        border: 1px solid #ddd;
+        border: 1px solid #ffffff;
         padding: 20px;
-        background: #f9f9f9;
+        background: #333333f5;
         border-radius: 8px;
       }
       .confirm-box p {
@@ -61,7 +69,7 @@
         text-align: center;
       }
       .back-btn {
-        background: #e4e6eb;
+        background: #9b9b9b;
         border: none;
         text-decoration: none;
         color: #050505;
@@ -69,7 +77,7 @@
       .submit-btn {
         background: #1877f2;
         border: none;
-        color: #fff;
+        color: #e6e6e6;
       }
       .submit-btn:disabled {
         background: #a0bdf0;
@@ -77,7 +85,7 @@
       }
       hr {
         border: none;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid #2b2b2b;
         margin: 20px 0;
       }
     </style>
@@ -85,7 +93,7 @@
   <body>
     <div class="container">
       <h1>入力内容の確認</h1>
-      <p>以下の内容でよろしければ「注文を確定する」を押してください。</p>
+      <p style="color: #ffffff;">以下の内容でよろしければ「注文を確定する」を押してください。</p>
 
       <div id="preview-image-container">
         <!-- プレビュー画像がここに挿入されます -->
@@ -158,18 +166,23 @@
           <style>
               .info-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
               .info-row { display: flex; border-bottom: 1px solid #edf2f7; padding-bottom: 8px; align-items: flex-start; }
-              .info-label { width: 120px; font-size: 0.85rem; color: #718096; font-weight: bold; flex-shrink: 0; }
-              .info-value { font-size: 1rem; color: #2d3748; word-break: break-all; }
-              .important-notice { background-color: #fff5f5; border: 1px solid #feb2b2; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
-              .important-notice strong { color: #c53030; font-size: 0.9rem; line-height: 1.4; }
+              .info-label { width: 120px; font-size: 0.85rem; color: #ffffff; font-weight: bold; flex-shrink: 0; }
+              .info-value { font-size: 1rem; color: #ffffff; word-break: break-all; }
+              .important-notice { background-color: #9b9b9b; border: 1px solid transparent; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+              .important-notice strong { color: #fc267f; font-size: 0.6rem; line-height: 1.4; }
           </style>
           <div class="info-list">
               <div class="info-row"><div class="info-label">お名前</div><div class="info-value">${data.name} 様</div></div>
+              <div class="info-row"><div class="info-label">メールアドレス</div><div class="info-value">${data.email}</div></div>
               <div class="info-row"><div class="info-label">郵便番号</div><div class="info-value">〒${data.postalCode}</div></div>
               <div class="info-row"><div class="info-label">お届け先</div><div class="info-value">${data.autoAddress}${data.address}</div></div>
               <div class="info-row"><div class="info-label">生まれた年</div><div class="info-value">${data.birthYear} 年</div></div>
-              <div class="info-row"><div class="info-label">ステータス</div><div class="info-value">No. ${data.playerNumber} / ${data.playerPosition}</div></div>
-          </div>
+           <!--
+              <div class="info-row">
+                <div class="info-label">スキルURL</div>
+                <div class="info-value">${data.skillUrl || "未入力"}</div></div> 
+              -->
+         </div>
           <div class="important-notice"><span>⚠️</span><strong>決済後のキャンセル・変更はできません。<br>入力内容に間違いがないか、今一度ご確認ください。</strong></div>`;
       };
 
