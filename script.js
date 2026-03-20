@@ -775,7 +775,7 @@ window.redirectToCheckout = async () => {
   statusLabel.textContent = "画像を生成しています...";
 
   // Stripeの料金IDをここで定義
-  const BASE_PRICE_ID = "price_1TCfDZDEJmFzQJ7mBYBiJYyp";
+  const BASE_PRICE_ID = "price_1TCfDZDEJmFzQJ7mBYBiJYyp"; // TODO: Replace with your actual Stripe Price ID
   const LOGO_UPLOAD_PRICE_ID = "price_1TCfdPDEJmFzQJ7mS0AKD15y";
   const SPECIAL_FRAME_PRICE_ID = "price_1TCfdPDEJmFzQJ7mS0AKD15y";
 
