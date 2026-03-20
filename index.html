@@ -6,21 +6,29 @@
     <title>写真の作成</title>
 
     <style>
+      html {
+        height: 230%;
+        /* background-attachment: fixed; は削除します */
+        background-image: url("画像/background.jpg");
+        background-position: center 0px; /* 初期位置 */
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
       :root {
-        --bg: #1a1a1a;
-        --card: #2a2a2a;
+        --bg: #1a1a1a2d;
+        --card: #2a2a2ae1;
         --accent: #007bff;
       }
 
       body {
         font-family: "Helvetica Neue", Arial, sans-serif;
-        background: var(--bg);
         color: white;
         display: flex;
         flex-direction: column;
         align-items: center;
         padding: 20px;
         margin: 0;
+        background: none;
       }
 
       .container {
@@ -70,7 +78,8 @@
       /* 画像選択エリアのスタイル（4列グリッド） */
       #bg-container,
       #logo-container,
-      #frame-container,
+      #frame-container-1,
+      #frame-container-2,
       #status-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr); /* 横に4つずつアイテムを並べる */
@@ -85,7 +94,7 @@
         background: var(--accent);
         font-weight: bold;
         padding: 15px;
-        margin-top: 10px;
+        margin-top: 0px;
       }
       .main-btn:active {
         transform: scale(0.98);
@@ -126,11 +135,52 @@
         margin-top: 20px;
         border-radius: 10px;
       }
+
+      .skill-item img,
+      .skill-item svg {
+        width: 20px !important;
+        height: 20px !important;
+        max-width: 20px !important;
+        object-fit: contain !important;
+      }
+
+      .skill-item.selected {
+        border: 2px solid var(--accent);
+        border-radius: 5px;
+        background-color: rgba(0, 123, 255, 0.1);
+      }
+
+      #advanced-skill-section[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
     </style>
+
+    <script>
+      // ここからアフィリエイトIDの処理
+      (function () {
+        // 1. URLから「ref」という名前のパラメータを探す
+        const urlParams = new URLSearchParams(window.location.search);
+        const refId = urlParams.get("ref");
+
+        // 2. もしrefIdが見つかったら、ブラウザ（LocalStorage）に保存する
+        if (refId) {
+          localStorage.setItem("affiliate_ref_id", refId);
+          console.log("紹介者IDを記録しました:", refId);
+        }
+      })();
+      // ここまでアフィリエイトIDの処理
+    </script>
 
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/bundle.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&family=Noto+Sans+JP&family=Noto+Serif+JP&family=Ten+Mincho&family=Yuji+Syuku&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="container">
@@ -141,7 +191,7 @@
           top: 10px;
           right: 10px;
           font-size: 12px;
-          color: #666;
+          color: #616161;
         "
       ></div>
       <div style="text-align: center">
@@ -167,6 +217,19 @@
         >
           写真を選択する
         </button>
+        <a
+          href="https://www.remove.bg/ja"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #aaa;
+          "
+          >背景の切り抜きはこちら（外部サイト）</a
+        >
       </div>
 
       <!-- 3. ステータスを選択 -->
@@ -205,12 +268,186 @@
         </div>
       </div>
 
-      <!-- 5. 枠の選択 -->
-      <div>
-        <label>5. 枠の選択</label>
-        <div id="frame-container" class="controls bg-select">
+      <!--  カスタム画像の追加 -->
+      <div class="custom-image-container controls" style="gap: 0px">
+        <input
+          type="file"
+          id="custom-image-upload"
+          accept="image/*"
+          style="display: none"
+        />
+        <label>オプション</label>
+        <button
+          onclick="document.getElementById('custom-image-upload').click()"
+          class="main-btn"
+        >
+          画像を選択する
+        </button>
+        <div
+          id="custom-image-controls"
+          style="display: none; margin-top: 10px"
+        ></div>
+      </div>
+
+      <!-- 5. テキストの追加 -->
+      <div class="text-tool-container">
+        <div style="margin-top: 30px"></div>
+        <label>5. テキストを追加</label>
+        <input
+          type="text"
+          id="text-input"
+          placeholder="テキストを入力..."
+          style="
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background: #333;
+            color: white;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+          "
+        />
+        <div
+          class="text-controls"
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+          "
+        >
+          <select
+            id="font-select"
+            style="
+              padding: 10px;
+              border-radius: 8px;
+              background: #444;
+              color: white;
+              border: none;
+              grid-column: 1 / -1;
+            "
+          >
+            <option value="'Noto Serif JP', serif">明朝</option>
+            <option value="'M PLUS 1p', sans-serif">ゴシック</option>
+            <option value="'Noto Sans JP', sans-serif">源ノ角ゴシック</option>
+            <option value="'Ten Mincho', serif">貂明朝</option>
+            <option value="'Yuji Syuku', cursive">アオハルマーカー(風)</option>
+          </select>
+          <select
+            id="writing-mode-select"
+            style="
+              padding: 10px;
+              border-radius: 8px;
+              background: #444;
+              color: white;
+              border: none;
+            "
+          >
+            <option value="horizontal">横書き</option>
+            <option value="vertical">縦書き</option>
+          </select>
+          <input
+            type="number"
+            id="font-size-input"
+            min="10"
+            max="150"
+            value="40"
+            style="
+              padding: 10px;
+              border-radius: 8px;
+              background: #444;
+              color: white;
+              border: none;
+              width: 100%;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+
+        <button
+          id="add-text-btn"
+          class="main-btn"
+          style="background-color: #17a2b8"
+        >
+          テキストを追加 / 更新
+        </button>
+      </div>
+
+      <!-- 6. 枠の選択 -->
+      <div style="margin-top: 30px">
+        <label>6. 枠の選択</label>
+        <div
+          id="frame-container-1"
+          class="controls bg-select"
+          style="margin-top: 0px"
+        >
           <!-- スプレッドシートから自動生成 -->
         </div>
+        <label>オプション</label>
+        <div
+          id="frame-container-2"
+          class="controls bg-select"
+          style="margin-top: 0px"
+        >
+          <!-- スプレッドシートから自動生成 -->
+        </div>
+      </div>
+
+      <!-- 7. スキルの選択 -->
+      <div>
+        <label>7. スキルの選択</label>
+        <div id="skill-container-1" class="controls">
+          <!-- スキル画像5こ -->
+        </div>
+
+        <label style="display: inline-block; margin-top: 20px"
+          >オプション <coming soon></coming
+        ></label>
+        <fieldset
+          id="advanced-skill-section"
+          disabled
+          style="border: none; padding: 0; margin: 0"
+        >
+          <div style="text-align: left; margin: 10px 0">
+            <label
+              ><input type="checkbox" id="skill-request" />
+              【チャレンジ】スキルの申請をしてみる｡</label
+            >
+          </div>
+          <p
+            style="
+              text-align: left;
+              font-size: 0.8rem;
+              color: #aaa;
+              margin: 10px 0;
+            "
+          >
+            これより下は､審査が必要になります｡動画のURLを送信してください｡
+          </p>
+          <input
+            type="url"
+            id="skill-video-url"
+            placeholder="動画のURLを入力"
+            style="
+              width: 100%;
+              padding: 10px;
+              border-radius: 8px;
+              border: 1px solid #555;
+              background: #333;
+              color: white;
+              box-sizing: border-box;
+              margin-bottom: 10px;
+            "
+          />
+
+          <div id="skill-container-2" class="controls">
+            <!-- スキル画像5こ -->
+          </div>
+          <div id="skill-container-3" class="controls">
+            <!-- スキル画像5こ -->
+          </div>
+        </fieldset>
       </div>
 
       <canvas id="canvas"></canvas>
@@ -246,13 +483,39 @@
         >
           送付先情報を入力してください
         </label>
-        <form style="display: flex; flex-direction: column; gap: 15px">
+        <form
+          id="order-form"
+          style="display: flex; flex-direction: column; gap: 15px"
+        >
           <div id="form-errors" style="color: #ff4d4d; font-size: 0.9rem"></div>
+
           <div>
             <label>名前</label>
             <input
               type="text"
               id="name"
+              name="name"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #555;
+                background: #333;
+                color: white;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+
+          <div>
+            <label>メールアドレス</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="example@mail.com"
               style="
                 width: 100%;
                 padding: 8px;
@@ -270,6 +533,7 @@
             <input
               type="text"
               id="postal-code"
+              name="postal_code"
               onchange="fetchAddress()"
               style="
                 width: 100%;
@@ -282,11 +546,13 @@
               "
             />
           </div>
+
           <div>
             <label>住所</label>
             <input
               type="text"
               id="auto-address"
+              name="address_auto"
               readonly
               style="
                 width: 100%;
@@ -301,6 +567,7 @@
             <input
               type="text"
               id="address"
+              name="address_detail"
               placeholder="番地・マンション名"
               style="
                 width: 100%;
@@ -314,11 +581,13 @@
               "
             />
           </div>
+
           <div>
             <label>生まれた年</label>
             <input
               type="number"
               id="birth-year"
+              name="birth_year"
               placeholder="1990"
               min="1900"
               max="2030"
@@ -333,24 +602,49 @@
               "
             />
           </div>
+
           <div style="text-align: center">
             <label
-              ><input type="checkbox" id="agree-terms" />
-              利用規約に同意する</label
+              ><input type="checkbox" id="agree-terms" required />
+              <a href="tokusho.html" target="_blank">利用規約</a
+              >に同意する</label
             >
           </div>
+
           <button
             type="button"
             onclick="redirectToCheckout()"
             id="submit-btn"
-            style="width: 100%; padding: 15px; background-color: #007bff"
+            style="
+              width: 100%;
+              padding: 15px;
+              background-color: #007bff;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+            "
           >
             内容を確認して注文する
           </button>
+
+          <input type="hidden" id="referrer_id" name="referrer_id" value="" />
         </form>
       </div>
     </div>
 
     <script src="script.js"></script>
+
+    <script>
+      window.addEventListener("scroll", () => {
+        const scrollY = window.scrollY;
+        // スクロール量の1/2の速さで動かす計算
+        const speed = -0.5;
+        const yPos = -(scrollY * speed);
+        // 背景位置を更新
+        document.documentElement.style.backgroundPosition = `center ${yPos}px`;
+      });
+    </script>
   </body>
 </html>
