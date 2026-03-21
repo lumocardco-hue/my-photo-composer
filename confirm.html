@@ -116,29 +116,26 @@
       const GAS_URL =
         "https://script.google.com/macros/s/AKfycbx_BrHzdGC99V8fNMIsdJCjajuM67OPhCj4f5iSNK4bVx8oXMbggF079zRiYuhsovg1/exec";
       const STRIPE_PUBLISHABLE_KEY =
-        "pk_test_51T7mqvDLyro3HnGt8BxSF7Y3rQ3vKnuZiUdrpugHDzeAExH0aSr9cg7ZmyhbRD1pNeyE3n1KRx5zEhKjTPyzqlNo00HrVDw7tV";
+        "pk_live_51T7mqhDEJmFzQJ7moaSrj3okb1e11GCuY4lLWA0dGpDjtOl0czb2UuL8wsDgOXDJj5lQcWZoAYTRMrR4QSgUxifG00fxE5wCOS";
       // ==========================================
 
       const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-      // ページ読み込み時の処理を更新
+// ページ読み込み時の処理
       window.onload = function () {
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get("status");
 
-        // Stripeからのリダイレクトを処理
+        // Stripeからのリダイレクトを処理（成功時）
         if (status === "success") {
-          // 成功した場合、ページの内容を書き換える
           document.querySelector(".container").innerHTML = `
             <h1>決済が完了しました！</h1>
-            <p>ご注文いただきありがとうございます。商品の到着まで今しばらくお待ちください。</p>
-            <a href="index.html" class="back-btn" style="text-align: center; display: block; width: fit-content; margin: 20px auto;">トップページに戻る</a>
+            <p style="color: #ffffff; text-align: center;">ご注文いただきありがとうございます。商品の到着まで今しばらくお待ちください。</p>
+            <a href="index.html" class="back-btn" style="text-align: center; display: block; width: fit-content; margin: 20px auto; text-decoration: none;">トップページに戻る</a>
           `;
-          // 古いセッションデータをクリア
           sessionStorage.removeItem("orderData");
           return;
         } else if (status === "cancel") {
-          // キャンセルされた場合、トップページにリダイレクト
           alert("決済がキャンセルされました。");
           window.location.href = "index.html";
           return;
@@ -147,14 +144,23 @@
         // 通常の確認ページ表示処理
         const orderDataString = sessionStorage.getItem("orderData");
         if (!orderDataString) {
-          alert(
-            "注文データが見つかりません。お手数ですが、もう一度最初からお試しください。",
-          );
+          alert("注文データが見つかりません。最初からお試しください。");
           window.location.href = "index.html";
           return;
         }
 
         const data = JSON.parse(orderDataString);
+
+        // --- 1. 金額計算ロジック（Stripeの価格設定に合わせて調整してください） ---
+        let totalAmount = 3000; // 基本料
+        // ロゴアップロード オプションの判定
+        if (data.lineItems.some(item => item.price === "price_1TCfdPDEJmFzQJ7mS0AKD15y")) {
+          totalAmount += 1000;
+        }
+        // 特別な枠 オプションの判定
+        if (data.lineItems.some(item => item.price === "price_1TCfetDEJmFzQJ7mrdv7u7Nh")) {
+          totalAmount += 500;
+        }
 
         // プレビュー画像を表示
         const imgContainer = document.getElementById("preview-image-container");
@@ -168,8 +174,9 @@
               .info-row { display: flex; border-bottom: 1px solid #edf2f7; padding-bottom: 8px; align-items: flex-start; }
               .info-label { width: 120px; font-size: 0.85rem; color: #ffffff; font-weight: bold; flex-shrink: 0; }
               .info-value { font-size: 1rem; color: #ffffff; word-break: break-all; }
+              .total-row { border-top: 2px solid #ffffff; margin-top: 15px; padding-top: 15px; background: #444; padding: 10px; border-radius: 4px; }
               .important-notice { background-color: #9b9b9b; border: 1px solid transparent; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
-              .important-notice strong { color: #fc267f; font-size: 0.6rem; line-height: 1.4; }
+              .important-notice strong { color: #fc267f; font-size: 0.8rem; line-height: 1.4; }
           </style>
           <div class="info-list">
               <div class="info-row"><div class="info-label">お名前</div><div class="info-value">${data.name} 様</div></div>
@@ -177,13 +184,18 @@
               <div class="info-row"><div class="info-label">郵便番号</div><div class="info-value">〒${data.postalCode}</div></div>
               <div class="info-row"><div class="info-label">お届け先</div><div class="info-value">${data.autoAddress}${data.address}</div></div>
               <div class="info-row"><div class="info-label">生まれた年</div><div class="info-value">${data.birthYear} 年</div></div>
-           <!--
-              <div class="info-row">
-                <div class="info-label">スキルURL</div>
-                <div class="info-value">${data.skillUrl || "未入力"}</div></div> 
-              -->
-         </div>
-          <div class="important-notice"><span>⚠️</span><strong>決済後のキャンセル・変更はできません。<br>入力内容に間違いがないか、今一度ご確認ください。</strong></div>`;
+              
+              <div class="info-row total-row">
+                  <div class="info-label" style="font-size: 1rem;">合計金額</div>
+                  <div class="info-value" style="font-size: 1.4rem; color: #fc267f; font-weight: bold;">
+                    ¥${totalAmount.toLocaleString()}
+                  </div>
+              </div>
+          </div>
+          <div class="important-notice">
+              <span>⚠️</span>
+              <strong>決済後のキャンセル・変更はできません。<br>内容を今一度ご確認ください。</strong>
+          </div>`;
       };
 
       // 【修正】注文処理：GASにStripeセッション作成を依頼し、返ってきたIDでチェックアウトにリダイレクトする
