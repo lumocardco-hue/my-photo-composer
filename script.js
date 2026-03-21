@@ -4,9 +4,11 @@
 // 外部サービスとの連携に必要なURLやキーを設定します。
 const GAS_URL =
   "https://script.google.com/macros/s/AKfycbx_BrHzdGC99V8fNMIsdJCjajuM67OPhCj4f5iSNK4bVx8oXMbggF079zRiYuhsovg1/exec";
+// 編集箇所: Stripeの本番用公開鍵に更新
 const stripe = Stripe(
-  "pk_test_51T7mqvDLyro3HnGt8BxSF7Y3rQ3vKnuZiUdrpugHDzeAExH0aSr9cg7ZmyhbRD1pNeyE3n1KRx5zEhKjTPyzqlNo00HrVDw7tV",
+  "pk_live_51T7mqhDEJmFzQJ7moaSrj3okb1e11GCuY4lLWA0dGpDjtOl0czb2UuL8wsDgOXDJj5lQcWZoAYTRMrR4QSgUxifG00fxE5wCOS",
 );
+// 編集ここまで
 const statusLabel = document.getElementById("status");
 
 // ==========================================
@@ -215,21 +217,21 @@ class CanvasManager {
       if (obj.isLogo) this.canvas.remove(obj);
     });
 
- // ロゴ画像を読み込み、キャッシュを無効化してキャンバスに追加
+    // ロゴ画像を読み込み、キャッシュを無効化してキャンバスに追加
     fabric.Image.fromURL(
       // 1. 画像のURL。末尾に「?t=タイムスタンプ」を付けてブラウザキャッシュを回避
       fileName + "?t=" + Date.now(),
-      
+
       // 2. 画像の読み込みが完了した後に実行されるコールバック関数
       (img) => {
         // 3. 画像のプロパティ（位置、大きさ、属性）を一括設定
         img.set({
-          left: 280,                       // キャンバス左端からの距離を300pxに設定
-          top: this.canvas.height - 420,   // キャンバス下端から420pxの位置に配置
-          scaleX: 0.15,                    // 横方向の倍率を0.12倍に縮小
-          scaleY: 0.15,                    // 縦方向の倍率を0.12倍に縮小
-          isLogo: true,                    // 自作のカスタム属性。後でロゴを特定しやすくするため
-          selectable: false,               // ユーザーがマウスで選択したり動かしたりできないように固定
+          left: 280, // キャンバス左端からの距離を300pxに設定
+          top: this.canvas.height - 420, // キャンバス下端から420pxの位置に配置
+          scaleX: 0.15, // 横方向の倍率を0.12倍に縮小
+          scaleY: 0.15, // 縦方向の倍率を0.12倍に縮小
+          isLogo: true, // 自作のカスタム属性。後でロゴを特定しやすくするため
+          selectable: false, // ユーザーがマウスで選択したり動かしたりできないように固定
         });
 
         // 4. 設定した画像オブジェクトをキャンバス上に追加
@@ -241,12 +243,11 @@ class CanvasManager {
         // 6. 画面上のステータス表示用ラベルを「ロゴ設置完了」に変更
         statusLabel.textContent = "Logo Set!";
       },
-      
+
       // 7. 他のドメインから画像を読み込む際のCORS（セキュリティ）設定を「匿名」で許可
       { crossOrigin: "anonymous" },
     );
   }
-
 
   // [機能4] ステータス（数字とポジション）の描画
   addBrandElement(num, position) {
@@ -774,31 +775,27 @@ window.redirectToCheckout = async () => {
 
   statusLabel.textContent = "画像を生成しています...";
 
-  // Stripeの料金IDをここで定義
-  const BASE_PRICE_ID = "price_1TCfDZDEJmFzQJ7mBYBiJYyp"; // TODO: Replace with your actual Stripe Price ID
+  // Stripeの本番用料金IDに更新
+  // 1. 各商品のIDを定義（ここは変更なし）
+  const BASE_PRICE_ID = "price_1TCfDZDEJmFzQJ7mBYBiJYyp";
   const LOGO_UPLOAD_PRICE_ID = "price_1TCfdPDEJmFzQJ7mS0AKD15y";
-  const SPECIAL_FRAME_PRICE_ID = "price_1TCfdPDEJmFzQJ7mS0AKD15y";
+  const SPECIAL_FRAME_PRICE_ID = "price_1TCfetDEJmFzQJ7mrdv7u7Nh";
 
-  // lineItems 配列を作成
+  // 2. 「基本料」を最初に入れる
   const lineItems = [{ price: BASE_PRICE_ID, quantity: "1" }];
 
-  // 条件に応じて商品を追加（重複を避けるためSetを使用）
-  const additionalPriceIds = new Set();
-
-  // 1. カスタムロゴがアップロードされているかチェック
+  // 3. 【オプションA】ロゴ画像があれば追加
   if (AppState.canvasObjects.customImage) {
-    additionalPriceIds.add(LOGO_UPLOAD_PRICE_ID);
+    lineItems.push({ price: LOGO_UPLOAD_PRICE_ID, quantity: "1" });
   }
 
-  // 2. 特別な枠（waku101〜104）が選択されているかチェック
-  if (/waku10[1-4]\.png$/.test(AppState.selections.frame.path)) {
-    additionalPriceIds.add(SPECIAL_FRAME_PRICE_ID);
+  // 4. 【オプションB】特別な枠があれば追加
+  if (
+    AppState.selections.frame.path &&
+    /waku10[1-4]\.png$/.test(AppState.selections.frame.path)
+  ) {
+    lineItems.push({ price: SPECIAL_FRAME_PRICE_ID, quantity: "1" });
   }
-
-  additionalPriceIds.forEach(priceId => {
-    lineItems.push({ price: priceId, quantity: "1" });
-  });
-
 
   // キャンバスクラスから高解像度画像を生成
   const highResImg = myCanvas.generateHighResImage();
