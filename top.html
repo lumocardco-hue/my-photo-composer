@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Card Creator - LEVEL UP.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 背景：左は漆黒、右端にわずかに深紫（ピンクの気配）が入り込むグラデーション */
+        .bg-custom-cyber-subtle {
+            background: linear-gradient(110deg, #000000 80%, #0d001a 100%);
+            min-height: 100vh;
+        }
+
+        /* * 文字グラデーション：ライム主体に、一瞬だけピンクが通り抜ける
+         * Pが欠けないよう、パディングを調整し、
+         * アニメーションのスピードを滑らかにしました。
+         */
+        .text-gradient-lime-subtle {
+            /* ライム主体で、中央に一瞬ピンクが潜む設定 */
+            background: linear-gradient(to right, #1a6600 0%, #39ff14 40%, #ff007f 50%, #39ff14 60%, #1a6600 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shine-subtle 20s linear infinite;
+            /* Pの右側の「ヒゲ」が切れないように、わずかに右パディングを追加 */
+            padding-right: 0.2em; 
+        }
+
+        /* 光が左から右へ流れるアニメーション */
+        @keyframes shine-subtle {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+
+        /* 選択範囲のカスタマイズ（蛍光ライム） */
+        ::selection {
+            background-color: #39ff14;
+            color: black;
+        }
+    </style>
+</head>
+<body class="bg-custom-cyber-subtle text-white font-sans selection:bg-[#39ff14] selection:text-black">
+
+<section class="relative py-24 px-6 min-h-screen flex flex-col justify-center overflow-hidden">
+    
+    <div class="absolute top-0 right-0 p-8 opacity-5">
+        <div class="text-[12vw] font-black leading-none uppercase tracking-widest text-[#39ff14]">System<br>Ready</div>
+    </div>
+
+    <div class="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#39ff14]/10 blur-[120px] rounded-full"></div>
+    <div class="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#ff007f]/5 blur-[100px] rounded-full"></div>
+
+    <div class="max-w-5xl mx-auto relative z-10 text-center">
+        <img src="画像/ロゴ/rogo.png" alt="Logo" class="mx-auto mt-8 mb-8 w-32 h-auto">
+        <h1 class="text-7xl md:text-[10rem] font-black mb-10 tracking-tighter italic leading-none">
+            <span class="text-gradient-lime-subtle">
+                LUMA CARD
+            </span>
+        </h1>
+        
+        <p class="text-xl md:text-2xl font-mono mb-16 text-[#39ff14] uppercase tracking-[0.4em] opacity-90">
+            > 現実のステータスを、物理カードへ同期せよ。
+        </p>
+        
+        <div class="flex flex-col items-center gap-8">
+            <a href="https://my-photo-composer-p5vc-9ghihe2uk-lumocardco-hues-projects.vercel.app/" class="group relative px-20 py-7 overflow-hidden rounded-none bg-transparent border border-[#39ff14] transition-all hover:border-[#39ff14] hover:shadow-[0_0_60px_rgba(57,255,20,0.4)]">
+                <span class="relative z-10 font-black text-2xl tracking-[0.3em] text-[#39ff14] group-hover:text-black transition-colors uppercase">
+                    作成を開始する
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-[#39ff14] via-[#39ff14] to-[#ff007f] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-out"></div>
+            </a>
+
+            <div class="flex gap-8 text-[10px] font-mono tracking-widest uppercase mt-8">
+                <span class="text-[#39ff14] animate-pulse">[ Initializing Scan ]</span>
+                <span class="text-[#39ff14] animate-pulse" style="animation-delay: 0.5s;">[ Linking Profile ]</span>
+                <span class="text-[#39ff14] animate-pulse" style="animation-delay: 1s;">[ Ready to Print ]</span>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-12 left-1/2 -translate-x-1/2 w-[60%] h-[2px] bg-gradient-to-r from-[#ff007f] to-[#39ff14] opacity-50 hover:w-[80%] transition-all duration-1000"></div>
+</section>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+  <img src="画像/web/sumple (1).png" alt="Sample 1" class="w-full h-auto rounded-lg shadow-lg">
+  <img src="画像/web/sumple (2).png" alt="Sample 2" class="w-full h-auto rounded-lg shadow-lg">
+  <img src="画像/web/sumple (3).png" alt="Sample 3" class="w-full h-auto rounded-lg shadow-lg">
+  <img src="画像/web/sumple (4).png" alt="Sample 4" class="w-full h-auto rounded-lg shadow-lg">
+</div>
+<div class="flex flex-col items-center gap-8">
+            <a href="https://my-photo-composer-p5vc-9ghihe2uk-lumocardco-hues-projects.vercel.app/" class="group relative px-20 py-7 overflow-hidden rounded-none bg-transparent border border-[#39ff14] transition-all hover:border-[#39ff14] hover:shadow-[0_0_60px_rgba(57,255,20,0.4)]">
+                <span class="relative z-10 font-black text-2xl tracking-[0.3em] text-[#39ff14] group-hover:text-black transition-colors uppercase">
+                    作成を開始する
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-[#39ff14] via-[#39ff14] to-[#ff007f] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-out"></div>
+            </a>
+
+            <div class="flex gap-8 text-[10px] font-mono tracking-widest uppercase mt-8">
+                <span class="text-[#39ff14] animate-pulse">[ Initializing Scan ]</span>
+                <span class="text-[#39ff14] animate-pulse" style="animation-delay: 0.5s;">[ Linking Profile ]</span>
+                <span class="text-[#39ff14] animate-pulse" style="animation-delay: 1s;">[ Ready to Print ]</span>
+            </div>
+            <img src="画像/ロゴ/rogo.png" alt="Logo" class="mx-auto mt-8 mb-8 w-32 h-auto">
+<footer class="text-center py-10 px-6 text-xs font-mono uppercase tracking-widest border-t border-[#39ff14]/5 bg-black relative z-10">
+    <p class="text-[#595959]/40">&copy; 2026 Personal Card Creator. All rights reserved.</p>
+    <p class="text-[#595959]/20 mt-2">System Status: <span class="animate-pulse">Online</span></p>
+</footer>
+</body>
+</html>
