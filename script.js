@@ -264,6 +264,9 @@ class CanvasManager {
       fontFamily: "Impact",
       isStatus: true,
       selectable: false,
+      stroke: '#000000',
+      strokeWidth: 2,
+      paintFirst: "stroke"
     });
 
     const posDisplay = new fabric.Text(position, {
