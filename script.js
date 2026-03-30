@@ -264,7 +264,7 @@ class CanvasManager {
       fontFamily: "Impact",
       isStatus: true,
       selectable: false,
-      stroke: '#000000',
+      stroke: '#444',
       strokeWidth: 2,
       paintFirst: "stroke"
     });
